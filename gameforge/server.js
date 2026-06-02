@@ -32,7 +32,7 @@ async function bootstrap() {
 
   // ── MIDDLEWARE ─────────────────────────────────────────────────
   app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
+    origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'],
     credentials: true
   }))
   app.use(helmet({ contentSecurityPolicy: false }))
@@ -42,7 +42,9 @@ async function bootstrap() {
 
   // ── STATIC FRONTEND ────────────────────────────────────────────
   const publicDir = path.join(__dirname, 'public')
-  app.use(express.static(publicDir))
+  if (fs.existsSync(publicDir)) {
+    app.use(express.static(publicDir))
+  }
 
   // ── API ROUTES ─────────────────────────────────────────────────
   app.use('/api/auth', authRoutes)
@@ -89,7 +91,7 @@ async function bootstrap() {
   db.data.servers.forEach(s => serverManager._initMetrics(s.id))
 
   // ── START ──────────────────────────────────────────────────────
-  server.listen(PORT, () => {
+  server.listen(PORT, '127.0.0.1', () => {
     console.log('\n╔══════════════════════════════════════════╗')
     console.log('║         🎮  GameForge v1.0.0             ║')
     console.log('╠══════════════════════════════════════════╣')
