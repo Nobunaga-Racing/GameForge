@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameForge — Game Server Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-void: #080B0F;
+    --bg-deep: #0D1117;
+    --bg-panel: #111820;
+    --bg-card: #161E28;
+    --bg-elevated: #1C2535;
+    --bg-hover: #212D3D;
+    --border-faint: rgba(255,255,255,0.05);
+    --border-subtle: rgba(255,255,255,0.09);
+    --border-medium: rgba(255,255,255,0.15);
+    --border-strong: rgba(255,255,255,0.25);
+    --text-primary: #F0F4FF;
+    --text-secondary: #8A9BB5;
+    --text-muted: #4A5A72;
+    --accent-cyan: #00D4FF;
+    --accent-cyan-dim: rgba(0,212,255,0.15);
+    --accent-cyan-glow: rgba(0,212,255,0.3);
+    --accent-green: #00FF94;
+    --accent-green-dim: rgba(0,255,148,0.12);
+    --accent-orange: #FF6B2B;
+    --accent-orange-dim: rgba(255,107,43,0.15);
+    --accent-red: #FF3B5C;
+    --accent-red-dim: rgba(255,59,92,0.15);
+    --accent-purple: #9B6EFF;
+    --accent-purple-dim: rgba(155,110,255,0.15);
+    --accent-yellow: #FFD60A;
+    --accent-yellow-dim: rgba(255,214,10,0.12);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --sidebar-w: 260px;
+    --header-h: 60px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-void);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    line-height: 1.5;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--bg-deep);
+    border-right: 1px solid var(--border-faint);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 10;
+  }
+  .sidebar::-webkit-scrollbar { width: 3px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 3px; }
+
+  .logo-area {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border-faint);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .logo-badge {
+    font-size: 9px;
+    font-weight: 600;
+    background: var(--accent-cyan-dim);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(0,212,255,0.2);
+    padding: 2px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+  }
+
+  .nav-section {
+    padding: 12px 12px 0;
+  }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 6px 8px 4px;
+    font-family: var(--font-mono);
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 400;
+    position: relative;
+    border: 1px solid transparent;
+    margin-bottom: 1px;
+    user-select: none;
+  }
+  .nav-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-faint);
+  }
+  .nav-item.active {
+    background: var(--accent-cyan-dim);
+    color: var(--accent-cyan);
+    border-color: rgba(0,212,255,0.2);
+  }
+  .nav-item.active .nav-icon { color: var(--accent-cyan); }
+  .nav-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .nav-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+    padding: 1px 6px;
+    border-radius: 20px;
+    border: 1px solid var(--border-faint);
+  }
+  .nav-badge.online { background: var(--accent-green-dim); color: var(--accent-green); border-color: rgba(0,255,148,0.2); }
+  .nav-badge.warn { background: var(--accent-orange-dim); color: var(--accent-orange); border-color: rgba(255,107,43,0.25); }
+
+  .game-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    margin-bottom: 1px;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+  .game-nav-item:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-faint); }
+  .game-nav-item.active { background: var(--accent-purple-dim); color: var(--accent-purple); border-color: rgba(155,110,255,0.2); }
+  .game-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .game-dot.running { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+  .game-dot.stopped { background: var(--text-muted); }
+  .game-dot.error { background: var(--accent-red); box-shadow: 0 0 6px var(--accent-red); }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 12px;
+    border-top: 1px solid var(--border-faint);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-card:hover { background: var(--bg-hover); }
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--font-display);
+    flex-shrink: 0;
+  }
+  .user-info { flex: 1; overflow: hidden; }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--text-muted); }
+
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    height: var(--header-h);
+    min-height: var(--header-h);
+    background: var(--bg-deep);
+    border-bottom: 1px solid var(--border-faint);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    z-index: 5;
+  }
+  .topbar-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .topbar-subtitle { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    font-family: var(--font-body);
+    user-select: none;
+  }
+  .btn-primary {
+    background: var(--accent-cyan);
+    color: #000;
+    border-color: var(--accent-cyan);
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: #33DBFF; box-shadow: 0 0 20px var(--accent-cyan-glow); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: var(--border-subtle);
+  }
+  .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-medium); }
+  .btn-danger {
+    background: var(--accent-red-dim);
+    color: var(--accent-red);
+    border-color: rgba(255,59,92,0.25);
+  }
+  .btn-danger:hover { background: rgba(255,59,92,0.25); }
+  .btn-success {
+    background: var(--accent-green-dim);
+    color: var(--accent-green);
+    border-color: rgba(0,255,148,0.2);
+  }
+  .btn-success:hover { background: rgba(0,255,148,0.2); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-icon { padding: 7px 9px; }
+
+  .notif-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+    font-size: 15px;
+  }
+  .notif-btn:hover { background: var(--bg-elevated); }
+  .notif-dot {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 7px; height: 7px;
+    background: var(--accent-red);
+    border-radius: 50%;
+    border: 1.5px solid var(--bg-deep);
+    box-shadow: 0 0 6px var(--accent-red);
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 24px;
+    background: var(--bg-void);
+  }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+
+  /* ── VIEWS ── */
+  .view { display: none; animation: fadeIn 0.2s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-faint);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border-subtle); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.7;
+  }
+  .stat-card[data-accent="cyan"] { --accent: var(--accent-cyan); }
+  .stat-card[data-accent="green"] { --accent: var(--accent-green); }
+  .stat-card[data-accent="orange"] { --accent: var(--accent-orange); }
+  .stat-card[data-accent="purple"] { --accent: var(--accent-purple); }
+  .stat-label { font-size: 11.5px; color: var(--text-muted); font-family: var(--font-mono); letter-spacing: 0.3px; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 800; font-family: var(--font-display); letter-spacing: -1px; color: var(--text-primary); }
+  .stat-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+  .stat-icon { position: absolute; top: 16px; right: 16px; font-size: 22px; opacity: 0.2; }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+  }
+  .section-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+  /* ── SERVER CARDS ── */
+  .servers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .server-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-faint);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .server-card:hover { border-color: var(--border-medium); background: var(--bg-elevated); transform: translateY(-1px); }
+  .server-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .game-icon {
+    width: 42px; height: 42px;
+    border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    border: 1px solid var(--border-faint);
+  }
+  .server-info { flex: 1; min-width: 0; }
+  .server-name { font-size: 14px; font-weight: 600; font-family: var(--font-display); color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .server-game { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+  .status-badge.online { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(0,255,148,0.2); }
+  .status-badge.offline { background: rgba(100,100,100,0.1); color: var(--text-muted); border: 1px solid var(--border-faint); }
+  .status-badge.starting { background: var(--accent-yellow-dim); color: var(--accent-yellow); border: 1px solid rgba(255,214,10,0.2); }
+  .status-badge.error { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(255,59,92,0.25); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .status-badge.online .status-dot { box-shadow: 0 0 6px var(--accent-green); }
+
+  .server-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .metric { text-align: center; }
+  .metric-val { font-size: 15px; font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); }
+  .metric-lbl { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+  .server-actions { display: flex; gap: 6px; }
+
+  .progress-bar-wrap { margin-bottom: 12px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+  .progress-track { height: 4px; background: var(--bg-elevated); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+
+  /* ── CONSOLE ── */
+  .console-wrap {
+    background: var(--bg-deep);
+    border: 1px solid var(--border-faint);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .console-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-faint);
+    background: var(--bg-panel);
+    gap: 8px;
+  }
+  .console-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .console-body {
+    height: 220px;
+    overflow-y: auto;
+    padding: 12px 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .console-body::-webkit-scrollbar { width: 3px; }
+  .console-body::-webkit-scrollbar-thumb { background: var(--border-subtle); }
+  .log-line { display: flex; gap: 10px; }
+  .log-time { color: var(--text-muted); flex-shrink: 0; }
+  .log-level { flex-shrink: 0; min-width: 50px; }
+  .log-level.info { color: var(--accent-cyan); }
+  .log-level.warn { color: var(--accent-yellow); }
+  .log-level.error { color: var(--accent-red); }
+  .log-level.ok { color: var(--accent-green); }
+  .log-msg { color: var(--text-secondary); }
+  .console-input-wrap {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border-faint);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .console-prompt { color: var(--accent-cyan); font-family: var(--font-mono); font-size: 13px; }
+  .console-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .console-input::placeholder { color: var(--text-muted); }
+
+  /* ── GAME CONFIG PANEL ── */
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  .config-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-faint);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+  .config-card-title {
+    font-family: var(--font-display);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; display: block; font-weight: 500; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 8px 12px;
+    font-family: var(--font-body);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 2px var(--accent-cyan-dim);
+  }
+  .form-select { cursor: pointer; }
+  .form-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .toggle-wrap { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-faint); }
+  .toggle-wrap:last-child { border-bottom: none; }
+  .toggle-info { }
+  .toggle-title { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+  .toggle-desc { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+  .toggle {
+    width: 38px; height: 20px;
+    background: var(--bg-elevated);
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: 1px solid var(--border-subtle);
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: all 0.2s;
+  }
+  .toggle.on { background: var(--accent-cyan-dim); border-color: rgba(0,212,255,0.3); }
+  .toggle.on::after { background: var(--accent-cyan); transform: translateX(18px); box-shadow: 0 0 8px var(--accent-cyan-glow); }
+
+  /* ── MODS ── */
+  .mods-list { display: flex; flex-direction: column; gap: 8px; }
+  .mod-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-faint);
+    border-radius: var(--radius-md);
+    transition: border-color 0.15s;
+  }
+  .mod-item:hover { border-color: var(--border-subtle); }
+  .mod-thumb {
+    width: 38px; height: 38px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    border: 1px solid var(--border-faint);
+  }
+  .mod-info { flex: 1; min-width: 0; }
+  .mod-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .mod-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .mod-size { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+
+  /* ── BACKUPS ── */
+  .backup-table { width: 100%; border-collapse: collapse; }
+  .backup-table th {
+    text-align: left; padding: 8px 12px;
+    font-size: 11px; font-weight: 600;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-faint);
+  }
+  .backup-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-faint);
+    color: var(--text-secondary);
+  }
+  .backup-table tr:last-child td { border-bottom: none; }
+  .backup-table tr:hover td { background: var(--bg-elevated); }
+  .backup-size { font-family: var(--font-mono); font-size: 12px; }
+
+  /* ── MONITORING CHARTS ── */
+  .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-faint);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+  }
+  .chart-title { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; font-family: var(--font-mono); letter-spacing: 0.3px; }
+  .mini-chart { height: 70px; display: flex; align-items: flex-end; gap: 3px; }
+  .bar {
+    flex: 1;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.3s;
+    min-height: 4px;
+  }
+  .bar-cpu { background: var(--accent-cyan); opacity: 0.7; }
+  .bar-ram { background: var(--accent-purple); opacity: 0.7; }
+  .bar-net { background: var(--accent-green); opacity: 0.7; }
+
+  /* ── WIZARD ── */
+  .wizard-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .wizard-overlay.open { display: flex; }
+  .wizard-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-xl);
+    width: min(640px, 95vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+  .wizard-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border-faint);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .wizard-header-icon {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-lg);
+    background: var(--accent-cyan-dim);
+    border: 1px solid rgba(0,212,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .wizard-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .wizard-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+  .wizard-body { padding: 24px 28px; }
+  .wizard-steps { display: flex; gap: 6px; margin-bottom: 24px; }
+  .wizard-step {
+    height: 4px;
+    flex: 1;
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    transition: background 0.3s;
+  }
+  .wizard-step.done { background: var(--accent-cyan); }
+  .wizard-step.active { background: var(--accent-cyan); opacity: 0.5; }
+  .wizard-footer {
+    padding: 16px 28px;
+    border-top: 1px solid var(--border-faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .wizard-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+  }
+  .wizard-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .wizard-panel { position: relative; }
+
+  /* ── GAME TABS ── */
+  .game-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--bg-panel);
+    padding: 4px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-faint);
+    overflow-x: auto;
+  }
+  .game-tabs::-webkit-scrollbar { height: 0; }
+  .game-tab {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    color: var(--text-secondary);
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .game-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .game-tab.active { background: var(--bg-elevated); color: var(--text-primary); font-weight: 600; }
+  .game-tab-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* ── ALERTS ── */
+  .alert-list { display: flex; flex-direction: column; gap: 8px; }
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    font-size: 13px;
+  }
+  .alert-item.warn { background: var(--accent-yellow-dim); border-color: rgba(255,214,10,0.2); }
+  .alert-item.error { background: var(--accent-red-dim); border-color: rgba(255,59,92,0.2); }
+  .alert-item.info { background: var(--accent-cyan-dim); border-color: rgba(0,212,255,0.2); }
+  .alert-item.success { background: var(--accent-green-dim); border-color: rgba(0,255,148,0.2); }
+  .alert-icon { font-size: 16px; flex-shrink: 0; }
+  .alert-title { font-weight: 600; color: var(--text-primary); }
+  .alert-msg { color: var(--text-secondary); font-size: 12px; margin-top: 1px; }
+  .alert-time { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-left: auto; flex-shrink: 0; }
+
+  /* ── PLAYERS TABLE ── */
+  .players-table { width: 100%; border-collapse: collapse; }
+  .players-table th {
+    text-align: left; padding: 8px 10px;
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    font-family: var(--font-mono); letter-spacing: 0.5px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border-faint);
+  }
+  .players-table td { padding: 9px 10px; font-size: 12.5px; border-bottom: 1px solid var(--border-faint); }
+  .players-table tr:last-child td { border-bottom: none; }
+  .players-table tr:hover td { background: var(--bg-elevated); }
+  .player-name { color: var(--text-primary); font-weight: 500; }
+  .player-ping { font-family: var(--font-mono); font-size: 12px; }
+  .ping-good { color: var(--accent-green); }
+  .ping-med { color: var(--accent-yellow); }
+  .ping-bad { color: var(--accent-red); }
+  .kick-btn { font-size: 11px; padding: 3px 8px; }
+
+  /* ── TWO-COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ── PILL TAGS ── */
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; font-family: var(--font-mono); }
+  .tag-cyan { background: var(--accent-cyan-dim); color: var(--accent-cyan); border: 1px solid rgba(0,212,255,0.2); }
+  .tag-green { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(0,255,148,0.2); }
+  .tag-orange { background: var(--accent-orange-dim); color: var(--accent-orange); border: 1px solid rgba(255,107,43,0.2); }
+  .tag-purple { background: var(--accent-purple-dim); color: var(--accent-purple); border: 1px solid rgba(155,110,255,0.2); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+  .empty-desc { font-size: 13px; }
+
+  /* ── MARKETPLACE CARDS ── */
+  .market-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .market-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-faint);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .market-card:hover { border-color: var(--border-medium); transform: translateY(-2px); }
+  .market-thumb {
+    height: 90px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-faint);
+  }
+  .market-body { padding: 12px 14px; }
+  .market-name { font-size: 13.5px; font-weight: 700; font-family: var(--font-display); color: var(--text-primary); margin-bottom: 4px; }
+  .market-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .market-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .market-stars { color: var(--accent-yellow); font-size: 11px; }
+  .market-downloads { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+
+  /* ── DISCORD INTEGRATION ── */
+  .discord-card {
+    background: #1a1d2e;
+    border: 1px solid rgba(88,101,242,0.3);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .discord-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .discord-icon { width: 32px; height: 32px; background: #5865F2; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .discord-title { font-size: 14px; font-weight: 700; font-family: var(--font-display); color: var(--text-primary); }
+  .discord-sub { font-size: 12px; color: #7289da; }
+
+  /* Scrollbar global */
+  .content::-webkit-scrollbar { width: 4px; }
+
+  /* Mobile tweak */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .servers-grid { grid-template-columns: 1fr 1fr; }
+    .config-grid { grid-template-columns: 1fr; }
+    .market-grid { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .sidebar { display: none; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .servers-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <a class="logo" href="#">
+      <div class="logo-icon">⚙</div>
+      GameForge
+      <span class="logo-badge">v2.0</span>
+    </a>
+  </div>
+
+  <nav class="nav-section">
+    <div class="nav-label">Navigation</div>
+    <div class="nav-item active" onclick="switchView('dashboard')">
+      <div class="nav-icon">⬡</div>
+      Dashboard
+      <span class="nav-badge online">4 online</span>
+    </div>
+    <div class="nav-item" onclick="switchView('monitoring')">
+      <div class="nav-icon">◈</div>
+      Monitoring
+    </div>
+    <div class="nav-item" onclick="switchView('mods')">
+      <div class="nav-icon">◧</div>
+      Mods &amp; Workshop
+      <span class="nav-badge warn">3 mises à jour</span>
+    </div>
+    <div class="nav-item" onclick="switchView('backups')">
+      <div class="nav-icon">◫</div>
+      Sauvegardes
+    </div>
+    <div class="nav-item" onclick="switchView('marketplace')">
+      <div class="nav-icon">◈</div>
+      Marketplace
+    </div>
+    <div class="nav-item" onclick="switchView('settings')">
+      <div class="nav-icon">◎</div>
+      Paramètres
+    </div>
+  </nav>
+
+  <nav class="nav-section" style="margin-top: 8px;">
+    <div class="nav-label">Serveurs actifs</div>
+    <div class="game-nav-item active" onclick="switchView('game-ark')">
+      <div class="game-dot running"></div>
+      🦕 ARK: Survival Evolved
+    </div>
+    <div class="game-nav-item" onclick="switchView('game-valheim')">
+      <div class="game-dot running"></div>
+      ⚔️ Valheim
+    </div>
+    <div class="game-nav-item" onclick="switchView('game-minecraft')">
+      <div class="game-dot running"></div>
+      ⛏️ Minecraft
+    </div>
+    <div class="game-nav-item" onclick="switchView('game-satisfactory')">
+      <div class="game-dot running"></div>
+      🏭 Satisfactory
+    </div>
+    <div class="game-nav-item" onclick="switchView('game-dayz')">
+      <div class="game-dot stopped"></div>
+      🧟 DayZ
+    </div>
+    <div class="game-nav-item" onclick="switchView('game-arma3')">
+      <div class="game-dot stopped"></div>
+      🪖 Arma 3
+    </div>
+    <div class="game-nav-item" onclick="switchView('game-enshrouded')">
+      <div class="game-dot error"></div>
+      🌫️ Enshrouded
+    </div>
+    <div class="game-nav-item">
+      <div class="game-dot stopped"></div>
+      🚛 ETS2
+    </div>
+    <div class="game-nav-item">
+      <div class="game-dot stopped"></div>
+      🚜 Farming Sim 25
+    </div>
+    <div class="game-nav-item">
+      <div class="game-dot stopped"></div>
+      🚀 Space Engineers
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="avatar">AD</div>
+      <div class="user-info">
+        <div class="user-name">Admin</div>
+        <div class="user-role">Super Admin</div>
+      </div>
+      <span style="color: var(--text-muted); font-size: 14px;">⚙</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <header class="topbar" id="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <span class="topbar-subtitle" id="topbar-sub">Vue globale de tous les serveurs</span>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-btn" onclick="showNotifications()">
+        🔔
+        <div class="notif-dot"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="refreshAll()">↻ Rafraîchir</button>
+      <button class="btn btn-primary btn-sm" onclick="openWizard()">+ Nouveau serveur</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card" data-accent="cyan">
+          <div class="stat-label">SERVEURS TOTAUX</div>
+          <div class="stat-value">12</div>
+          <div class="stat-sub">↑ +2 ce mois</div>
+          <div class="stat-icon">⬡</div>
+        </div>
+        <div class="stat-card" data-accent="green">
+          <div class="stat-label">EN LIGNE</div>
+          <div class="stat-value" id="online-count">4</div>
+          <div class="stat-sub"><span style="color:var(--accent-green)">●</span> 33% du total</div>
+          <div class="stat-icon">◈</div>
+        </div>
+        <div class="stat-card" data-accent="orange">
+          <div class="stat-label">JOUEURS CONNECTÉS</div>
+          <div class="stat-value" id="player-count">23</div>
+          <div class="stat-sub">/ 96 places max</div>
+          <div class="stat-icon">◎</div>
+        </div>
+        <div class="stat-card" data-accent="purple">
+          <div class="stat-label">CPU MOYEN</div>
+          <div class="stat-value" id="cpu-avg">38<span style="font-size:14px">%</span></div>
+          <div class="stat-sub">RAM: 14.2 / 32 GB</div>
+          <div class="stat-icon">◫</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">Serveurs actifs</div>
+          <div class="section-sub">4 serveurs en fonctionnement</div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-ghost btn-sm">Tout arrêter</button>
+          <button class="btn btn-ghost btn-sm">Filtrer</button>
+        </div>
+      </div>
+
+      <div class="servers-grid">
+        <!-- ARK -->
+        <div class="server-card" onclick="switchView('game-ark')">
+          <div class="server-card-header">
+            <div class="game-icon" style="background:linear-gradient(135deg,#1a2a1a,#2a4a2a)">🦕</div>
+            <div class="server-info">
+              <div class="server-name">ARK-PvP-EU-01</div>
+              <div class="server-game">ARK: Survival Evolved</div>
+            </div>
+            <div class="status-badge online"><div class="status-dot"></div>Online</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>CPU</span><span style="color:var(--accent-cyan)">52%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:52%;background:var(--accent-cyan)"></div></div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>RAM</span><span style="color:var(--accent-purple)">4.2 / 8 GB</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:52%;background:var(--accent-purple)"></div></div>
+          </div>
+          <div class="server-metrics">
+            <div class="metric"><div class="metric-val" style="color:var(--accent-green)">8</div><div class="metric-lbl">Joueurs</div></div>
+            <div class="metric"><div class="metric-val">70</div><div class="metric-lbl">Max</div></div>
+            <div class="metric"><div class="metric-val">32ms</div><div class="metric-lbl">Ping</div></div>
+          </div>
+          <div class="server-actions">
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation()">⏹ Stop</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">↻ Restart</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();switchView('game-ark')">⚙ Config</button>
+          </div>
+        </div>
+
+        <!-- VALHEIM -->
+        <div class="server-card" onclick="switchView('game-valheim')">
+          <div class="server-card-header">
+            <div class="game-icon" style="background:linear-gradient(135deg,#1a1a2e,#2a1a3e)">⚔️</div>
+            <div class="server-info">
+              <div class="server-name">Valhalla-Coop</div>
+              <div class="server-game">Valheim</div>
+            </div>
+            <div class="status-badge online"><div class="status-dot"></div>Online</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>CPU</span><span style="color:var(--accent-cyan)">28%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:28%;background:var(--accent-cyan)"></div></div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>RAM</span><span style="color:var(--accent-purple)">2.1 / 8 GB</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:26%;background:var(--accent-purple)"></div></div>
+          </div>
+          <div class="server-metrics">
+            <div class="metric"><div class="metric-val" style="color:var(--accent-green)">4</div><div class="metric-lbl">Joueurs</div></div>
+            <div class="metric"><div class="metric-val">10</div><div class="metric-lbl">Max</div></div>
+            <div class="metric"><div class="metric-val">18ms</div><div class="metric-lbl">Ping</div></div>
+          </div>
+          <div class="server-actions">
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation()">⏹ Stop</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">↻ Restart</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⚙ Config</button>
+          </div>
+        </div>
+
+        <!-- MINECRAFT -->
+        <div class="server-card" onclick="switchView('game-minecraft')">
+          <div class="server-card-header">
+            <div class="game-icon" style="background:linear-gradient(135deg,#1a2a1a,#1a3a1a)">⛏️</div>
+            <div class="server-info">
+              <div class="server-name">Survival-1.21</div>
+              <div class="server-game">Minecraft Java</div>
+            </div>
+            <div class="status-badge online"><div class="status-dot"></div>Online</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>CPU</span><span style="color:var(--accent-cyan)">31%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:31%;background:var(--accent-cyan)"></div></div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>RAM</span><span style="color:var(--accent-purple)">5.8 / 8 GB</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:72%;background:var(--accent-purple)"></div></div>
+          </div>
+          <div class="server-metrics">
+            <div class="metric"><div class="metric-val" style="color:var(--accent-green)">7</div><div class="metric-lbl">Joueurs</div></div>
+            <div class="metric"><div class="metric-val">20</div><div class="metric-lbl">Max</div></div>
+            <div class="metric"><div class="metric-val">24ms</div><div class="metric-lbl">Ping</div></div>
+          </div>
+          <div class="server-actions">
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation()">⏹ Stop</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">↻ Restart</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">⚙ Config</button>
+          </div>
+        </div>
+
+        <!-- ENSHROUDED (ERROR) -->
+        <div class="server-card">
+          <div class="server-card-header">
+            <div class="game-icon" style="background:linear-gradient(135deg,#2a1a1a,#3a1a1a)">🌫️</div>
+            <div class="server-info">
+              <div class="server-name">Enshrouded-Main</div>
+              <div class="server-game">Enshrouded</div>
+            </div>
+            <div class="status-badge error"><div class="status-dot"></div>Crash</div>
+          </div>
+          <div style="background:var(--accent-red-dim);border:1px solid rgba(255,59,92,0.2);border-radius:var(--radius-md);padding:10px 12px;font-size:12px;color:var(--accent-red);margin-bottom:12px;">
+            ⚠ Crash détecté il y a 14min — Out of memory (ligne 4821)
+          </div>
+          <div class="server-actions">
+            <button class="btn btn-success btn-sm">▶ Redémarrer</button>
+            <button class="btn btn-ghost btn-sm">📋 Logs</button>
+            <button class="btn btn-ghost btn-sm">⚙ Config</button>
+          </div>
+        </div>
+
+        <!-- SATISFACTORY -->
+        <div class="server-card">
+          <div class="server-card-header">
+            <div class="game-icon" style="background:linear-gradient(135deg,#1a1a2a,#2a2a1a)">🏭</div>
+            <div class="server-info">
+              <div class="server-name">Factory-Prod-01</div>
+              <div class="server-game">Satisfactory</div>
+            </div>
+            <div class="status-badge online"><div class="status-dot"></div>Online</div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>CPU</span><span style="color:var(--accent-cyan)">44%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:44%;background:var(--accent-cyan)"></div></div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>RAM</span><span style="color:var(--accent-purple)">3.1 / 6 GB</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:51%;background:var(--accent-purple)"></div></div>
+          </div>
+          <div class="server-metrics">
+            <div class="metric"><div class="metric-val" style="color:var(--accent-green)">4</div><div class="metric-lbl">Joueurs</div></div>
+            <div class="metric"><div class="metric-val">4</div><div class="metric-lbl">Max</div></div>
+            <div class="metric"><div class="metric-val">41ms</div><div class="metric-lbl">Ping</div></div>
+          </div>
+          <div class="server-actions">
+            <button class="btn btn-danger btn-sm">⏹ Stop</button>
+            <button class="btn btn-ghost btn-sm">↻ Restart</button>
+            <button class="btn btn-ghost btn-sm">⚙ Config</button>
+          </div>
+        </div>
+
+        <!-- ADD NEW -->
+        <div class="server-card" onclick="openWizard()" style="cursor:pointer;border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:180px;flex-direction:column;gap:12px;border-color:var(--border-subtle);">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);border:2px dashed var(--border-medium);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text-muted);">+</div>
+          <div style="text-align:center;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-secondary);">Nouveau serveur</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Configurer en quelques clics</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTS + CONSOLE ROW -->
+      <div class="two-col" style="margin-bottom:24px;">
+        <div>
+          <div class="section-header" style="margin-bottom:10px;">
+            <div class="section-title">Alertes récentes</div>
+            <button class="btn btn-ghost btn-sm">Tout voir</button>
+          </div>
+          <div class="alert-list">
+            <div class="alert-item error">
+              <div class="alert-icon">💥</div>
+              <div>
+                <div class="alert-title">Crash serveur Enshrouded</div>
+                <div class="alert-msg">Out of memory — allocation impossible (4096 MB)</div>
+              </div>
+              <div class="alert-time">14min</div>
+            </div>
+            <div class="alert-item warn">
+              <div class="alert-icon">⚠</div>
+              <div>
+                <div class="alert-title">Mise à jour disponible</div>
+                <div class="alert-msg">ARK v363.19 — correctifs de sécurité</div>
+              </div>
+              <div class="alert-time">1h</div>
+            </div>
+            <div class="alert-item info">
+              <div class="alert-icon">ℹ</div>
+              <div>
+                <div class="alert-title">Sauvegarde automatique</div>
+                <div class="alert-msg">Valheim — backup créé avec succès (2.3 GB)</div>
+              </div>
+              <div class="alert-time">3h</div>
+            </div>
+            <div class="alert-item success">
+              <div class="alert-icon">✓</div>
+              <div>
+                <div class="alert-title">Installation terminée</div>
+                <div class="alert-msg">Satisfactory v1.0.0.4 installé avec succès</div>
+              </div>
+              <div class="alert-time">5h</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-header" style="margin-bottom:10px;">
+            <div class="section-title">Console rapide — ARK-PvP-EU-01</div>
+            <button class="btn btn-ghost btn-sm">Plein écran</button>
+          </div>
+          <div class="console-wrap">
+            <div class="console-header">
+              <div class="console-dot" style="background:#ff5f56"></div>
+              <div class="console-dot" style="background:#ffbd2e"></div>
+              <div class="console-dot" style="background:#27c93f"></div>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:6px;font-family:var(--font-mono)">server.log — ARK-PvP-EU-01</span>
+            </div>
+            <div class="console-body" id="console-log">
+              <div class="log-line"><span class="log-time">14:32:01</span><span class="log-level ok">[OK]</span><span class="log-msg">Serveur démarré sur le port 7777</span></div>
+              <div class="log-line"><span class="log-time">14:32:05</span><span class="log-level info">[INFO]</span><span class="log-msg">Chargement de la map TheIsland...</span></div>
+              <div class="log-line"><span class="log-time">14:32:18</span><span class="log-level ok">[OK]</span><span class="log-msg">Map chargée (16.2s)</span></div>
+              <div class="log-line"><span class="log-time">14:33:44</span><span class="log-level info">[INFO]</span><span class="log-msg">Joueur "Dragon404" connecté (8/70)</span></div>
+              <div class="log-line"><span class="log-time">14:35:12</span><span class="log-level info">[INFO]</span><span class="log-msg">Joueur "NightWolf" connecté (9/70)</span></div>
+              <div class="log-line"><span class="log-time">14:41:03</span><span class="log-level warn">[WARN]</span><span class="log-msg">Latence élevée détectée (player: BlackHawk)</span></div>
+              <div class="log-line"><span class="log-time">14:55:22</span><span class="log-level info">[INFO]</span><span class="log-msg">Sauvegarde automatique en cours...</span></div>
+              <div class="log-line"><span class="log-time">14:55:31</span><span class="log-level ok">[OK]</span><span class="log-msg">Sauvegarde terminée (1.8 GB)</span></div>
+            </div>
+            <div class="console-input-wrap">
+              <span class="console-prompt">$</span>
+              <input class="console-input" placeholder="Entrer une commande..." id="console-cmd" onkeydown="sendCmd(event)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ARK VIEW ═══ -->
+    <div class="view" id="view-game-ark">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div class="game-icon" style="width:52px;height:52px;font-size:26px;background:linear-gradient(135deg,#1a2a1a,#2a4a2a)">🦕</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;">ARK: Survival Evolved</h1>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <span class="status-badge online"><div class="status-dot"></div>Online</span>
+            <span class="tag tag-cyan">v363.18</span>
+            <span class="tag tag-green">8 / 70 joueurs</span>
+          </div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn btn-ghost">📋 Logs</button>
+          <button class="btn btn-ghost">💾 Backup</button>
+          <button class="btn btn-danger">⏹ Arrêter</button>
+        </div>
+      </div>
+
+      <div class="game-tabs">
+        <div class="game-tab active" onclick="setTab(this,'ark','overview')">Vue générale</div>
+        <div class="game-tab" onclick="setTab(this,'ark','config')">Configuration</div>
+        <div class="game-tab" onclick="setTab(this,'ark','mods')">Mods</div>
+        <div class="game-tab" onclick="setTab(this,'ark','players')">Joueurs</div>
+        <div class="game-tab" onclick="setTab(this,'ark','maps')">Maps</div>
+        <div class="game-tab" onclick="setTab(this,'ark','console')">Console</div>
+      </div>
+
+      <!-- ARK OVERVIEW -->
+      <div id="ark-overview">
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="stat-card" data-accent="cyan"><div class="stat-label">UPTIME</div><div class="stat-value">14<span style="font-size:14px">h</span></div><div class="stat-sub">Depuis 00:32</div></div>
+          <div class="stat-card" data-accent="green"><div class="stat-label">JOUEURS</div><div class="stat-value">8</div><div class="stat-sub">/ 70 max</div></div>
+          <div class="stat-card" data-accent="orange"><div class="stat-label">CPU</div><div class="stat-value">52<span style="font-size:14px">%</span></div><div class="stat-sub">4 cores utilisés</div></div>
+          <div class="stat-card" data-accent="purple"><div class="stat-label">RAM</div><div class="stat-value">4.2<span style="font-size:14px">GB</span></div><div class="stat-sub">/ 8 GB alloués</div></div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="section-header"><div class="section-title">Infos serveur</div></div>
+            <div class="config-card">
+              <div style="display:flex;flex-direction:column;gap:0;">
+                <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Adresse IP</div><div class="toggle-desc" style="font-family:var(--font-mono);color:var(--accent-cyan)">51.210.x.x:7777</div></div></div>
+                <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Map active</div><div class="toggle-desc">TheIsland</div></div></div>
+                <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Mods chargés</div><div class="toggle-desc">12 mods actifs</div></div></div>
+                <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Version</div><div class="toggle-desc">ARK v363.18 (mise à jour disponible)</div></div></div>
+                <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Type</div><div class="toggle-desc">PvP — Multijoueur public</div></div><span class="tag tag-orange">PvP</span></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="section-header"><div class="section-title">Joueurs connectés</div><button class="btn btn-ghost btn-sm">+ Inviter</button></div>
+            <div class="config-card" style="padding:8px;">
+              <table class="players-table">
+                <tr><th>Joueur</th><th>Durée</th><th>Ping</th><th>Action</th></tr>
+                <tr><td class="player-name">Dragon404</td><td>4h12</td><td class="player-ping ping-good">32ms</td><td><button class="btn btn-ghost btn-sm kick-btn">Kick</button></td></tr>
+                <tr><td class="player-name">NightWolf</td><td>3h41</td><td class="player-ping ping-good">28ms</td><td><button class="btn btn-ghost btn-sm kick-btn">Kick</button></td></tr>
+                <tr><td class="player-name">BlackHawk</td><td>2h05</td><td class="player-ping ping-med">87ms</td><td><button class="btn btn-ghost btn-sm kick-btn">Kick</button></td></tr>
+                <tr><td class="player-name">ShadowFox</td><td>1h18</td><td class="player-ping ping-good">44ms</td><td><button class="btn btn-ghost btn-sm kick-btn">Kick</button></td></tr>
+                <tr><td class="player-name">IceBlade</td><td>58min</td><td class="player-ping ping-good">19ms</td><td><button class="btn btn-ghost btn-sm kick-btn">Kick</button></td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARK CONFIG (hidden by default) -->
+      <div id="ark-config" style="display:none;">
+        <div class="config-grid">
+          <div class="config-card">
+            <div class="config-card-title">🎮 Paramètres généraux</div>
+            <div class="form-group">
+              <label class="form-label">Nom du serveur</label>
+              <input class="form-input" value="ARK-PvP-EU-01">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mot de passe</label>
+              <input class="form-input" type="password" value="••••••••">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Max joueurs</label>
+                <input class="form-input" type="number" value="70">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Port</label>
+                <input class="form-input" type="number" value="7777">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Map</label>
+              <select class="form-select">
+                <option selected>TheIsland</option>
+                <option>ScorchedEarth</option>
+                <option>Aberration</option>
+                <option>Extinction</option>
+                <option>Genesis Part 1</option>
+                <option>Genesis Part 2</option>
+                <option>TheCenter</option>
+                <option>Ragnarok</option>
+                <option>Valguero</option>
+                <option>Crystal Isles</option>
+                <option>Lost Island</option>
+                <option>Fjordur</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <div class="config-card-title">⚔️ Paramètres gameplay</div>
+            <div class="toggle-wrap">
+              <div class="toggle-info"><div class="toggle-title">Mode PvP</div><div class="toggle-desc">Permet les combats entre joueurs</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle-info"><div class="toggle-title">Hardcore Mode</div><div class="toggle-desc">Mort permanente activée</div></div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle-info"><div class="toggle-title">AllowThirdPersonPlayer</div><div class="toggle-desc">Vue à la troisième personne</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle-info"><div class="toggle-title">ShowMapPlayerLocation</div><div class="toggle-desc">Afficher position sur map</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle-info"><div class="toggle-title">Enable Crossplay</div><div class="toggle-desc">Xbox / PC cross-platform</div></div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <div class="config-card-title">🔢 Multiplicateurs</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">XP Multiplier</label><input class="form-input" value="2.0"></div>
+              <div class="form-group"><label class="form-label">Taming Speed</label><input class="form-input" value="5.0"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Harvest Amount</label><input class="form-input" value="3.0"></div>
+              <div class="form-group"><label class="form-label">Player Dmg</label><input class="form-input" value="1.0"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Dino Dmg</label><input class="form-input" value="0.8"></div>
+              <div class="form-group"><label class="form-label">Dino Resistance</label><input class="form-input" value="1.0"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Structure Dmg</label><input class="form-input" value="0.5"></div>
+              <div class="form-group"><label class="form-label">Fuel Consumption</label><input class="form-input" value="0.5"></div>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <div class="config-card-title">🛡️ Administration</div>
+            <div class="form-group">
+              <label class="form-label">Mot de passe Admin</label>
+              <input class="form-input" type="password" value="••••••••">
+            </div>
+            <div class="form-group">
+              <label class="form-label">MOTD (Message du jour)</label>
+              <textarea class="form-textarea">Bienvenue sur ARK-PvP-EU-01 ! Les raids de bases sont autorisés le week-end uniquement. Bonne chance survivant !</textarea>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle-info"><div class="toggle-title">Whitelist activée</div><div class="toggle-desc">Seuls les joueurs approuvés peuvent rejoindre</div></div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="toggle-wrap">
+              <div class="toggle-info"><div class="toggle-title">BattleEye Anti-Cheat</div><div class="toggle-desc">Protection anti-triche activée</div></div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn btn-ghost">Annuler</button>
+          <button class="btn btn-primary" onclick="saveConfig()">Sauvegarder & Redémarrer</button>
+        </div>
+      </div>
+
+      <!-- ARK MODS (hidden) -->
+      <div id="ark-mods" style="display:none;">
+        <div class="section-header">
+          <div class="section-title">Mods installés (12)</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm">Mettre à jour tous</button>
+            <button class="btn btn-primary btn-sm">+ Ajouter mod</button>
+          </div>
+        </div>
+        <div class="mods-list">
+          <div class="mod-item">
+            <div class="mod-thumb">🦖</div>
+            <div class="mod-info">
+              <div class="mod-name">Primal Fear</div>
+              <div class="mod-meta">Steam Workshop • ID: 1675895425 • v2.1.14</div>
+            </div>
+            <span class="tag tag-green">Actif</span>
+            <span class="mod-size">845 MB</span>
+            <button class="btn btn-ghost btn-sm">↑ Update</button>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="mod-item">
+            <div class="mod-thumb">🗺️</div>
+            <div class="mod-info">
+              <div class="mod-name">Awesome SpyGlass!</div>
+              <div class="mod-meta">Steam Workshop • ID: 1404697612 • v1.9</div>
+            </div>
+            <span class="tag tag-green">Actif</span>
+            <span class="mod-size">12 MB</span>
+            <button class="btn btn-ghost btn-sm">✓ À jour</button>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="mod-item">
+            <div class="mod-thumb">🏠</div>
+            <div class="mod-info">
+              <div class="mod-name">Structures Plus (S+)</div>
+              <div class="mod-meta">Steam Workshop • ID: 731604991 • v1.38</div>
+            </div>
+            <span class="tag tag-orange">⚠ Mise à jour</span>
+            <span class="mod-size">323 MB</span>
+            <button class="btn btn-primary btn-sm">↑ Mettre à jour</button>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="mod-item">
+            <div class="mod-thumb">🌿</div>
+            <div class="mod-info">
+              <div class="mod-name">Eco's Decor</div>
+              <div class="mod-meta">Steam Workshop • ID: 880871931 • v3.4</div>
+            </div>
+            <span class="tag tag-cyan">Désactivé</span>
+            <span class="mod-size">198 MB</span>
+            <button class="btn btn-ghost btn-sm">✓ À jour</button>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARK CONSOLE (hidden) -->
+      <div id="ark-console" style="display:none;">
+        <div class="console-wrap" style="height:500px;">
+          <div class="console-header">
+            <div class="console-dot" style="background:#ff5f56"></div>
+            <div class="console-dot" style="background:#ffbd2e"></div>
+            <div class="console-dot" style="background:#27c93f"></div>
+            <span style="font-size:11px;color:var(--text-muted);margin-left:6px;font-family:var(--font-mono)">ARK-PvP-EU-01 — Console</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--accent-green);font-family:var(--font-mono)">● LIVE</span>
+          </div>
+          <div class="console-body" style="height:400px;">
+            <div class="log-line"><span class="log-time">14:32:01</span><span class="log-level ok">[OK]</span><span class="log-msg">Serveur ARK démarré — version 363.18</span></div>
+            <div class="log-line"><span class="log-time">14:32:05</span><span class="log-level info">[INFO]</span><span class="log-msg">Chargement mods: 1675895425, 1404697612, 731604991...</span></div>
+            <div class="log-line"><span class="log-time">14:32:18</span><span class="log-level ok">[OK]</span><span class="log-msg">12/12 mods chargés avec succès</span></div>
+            <div class="log-line"><span class="log-time">14:33:44</span><span class="log-level info">[INFO]</span><span class="log-msg">Player Dragon404 (SteamID:76561xxxxxx) a rejoint le serveur</span></div>
+            <div class="log-line"><span class="log-time">14:55:22</span><span class="log-level info">[INFO]</span><span class="log-msg">AutoSave en cours...</span></div>
+            <div class="log-line"><span class="log-time">14:55:31</span><span class="log-level ok">[OK]</span><span class="log-msg">AutoSave terminé (1.8 GB, 8.9s)</span></div>
+            <div class="log-line"><span class="log-time">15:02:14</span><span class="log-level warn">[WARN]</span><span class="log-msg">CPU spike 89% pendant 3s (processus de sauvegarde)</span></div>
+          </div>
+          <div class="console-input-wrap">
+            <span class="console-prompt">ark&gt;</span>
+            <input class="console-input" placeholder="ex: kickplayer Dragon404, broadcast Hello world, ...">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MONITORING ═══ -->
+    <div class="view" id="view-monitoring">
+      <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card" data-accent="cyan"><div class="stat-label">CPU GLOBAL</div><div class="stat-value">38<span style="font-size:14px">%</span></div><div class="stat-sub">4 serveurs actifs</div></div>
+        <div class="stat-card" data-accent="purple"><div class="stat-label">RAM GLOBALE</div><div class="stat-value">14.2<span style="font-size:14px">GB</span></div><div class="stat-sub">/ 32 GB total</div></div>
+        <div class="stat-card" data-accent="green"><div class="stat-label">BANDE PASSANTE</div><div class="stat-value">82<span style="font-size:14px">MB/s</span></div><div class="stat-sub">↑ 41 ↓ 41 MB/s</div></div>
+        <div class="stat-card" data-accent="orange"><div class="stat-label">STOCKAGE</div><div class="stat-value">380<span style="font-size:14px">GB</span></div><div class="stat-sub">/ 1 TB utilisé</div></div>
+      </div>
+
+      <div class="monitor-grid">
+        <div class="chart-card">
+          <div class="chart-title">CPU PAR SERVEUR — 30 DERNIÈRES MINUTES</div>
+          <div class="mini-chart" id="cpu-chart"></div>
+          <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--accent-cyan);">● ARK: 52%</span>
+            <span style="font-size:11px;color:var(--accent-green);">● Valheim: 28%</span>
+            <span style="font-size:11px;color:var(--accent-purple);">● Minecraft: 31%</span>
+            <span style="font-size:11px;color:var(--accent-orange);">● Satisfactory: 44%</span>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">RAM PAR SERVEUR — 30 DERNIÈRES MINUTES</div>
+          <div class="mini-chart" id="ram-chart"></div>
+          <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--accent-cyan);">● ARK: 4.2 GB</span>
+            <span style="font-size:11px;color:var(--accent-green);">● Valheim: 2.1 GB</span>
+            <span style="font-size:11px;color:var(--accent-purple);">● MC: 5.8 GB</span>
+            <span style="font-size:11px;color:var(--accent-orange);">● Satis: 3.1 GB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="config-card">
+          <div class="config-card-title">🌐 Réseau en temps réel</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">ARK-PvP-EU-01</div><div class="toggle-desc">51.210.x.x:7777</div></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-green)">↑4.2 ↓1.8 MB/s</span></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Valhalla-Coop</div><div class="toggle-desc">51.210.x.x:2456</div></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-green)">↑1.1 ↓0.4 MB/s</span></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Survival-1.21</div><div class="toggle-desc">51.210.x.x:25565</div></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-green)">↑2.3 ↓0.9 MB/s</span></div>
+            <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Factory-Prod-01</div><div class="toggle-desc">51.210.x.x:7777</div></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-green)">↑1.8 ↓0.7 MB/s</span></div>
+          </div>
+        </div>
+        <div class="config-card">
+          <div class="config-card-title">💾 Stockage par serveur</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div><div class="progress-label"><span>ARK: Survival Evolved</span><span style="color:var(--text-secondary);">128 GB</span></div><div class="progress-track"><div class="progress-fill" style="width:64%;background:var(--accent-cyan)"></div></div></div>
+            <div><div class="progress-label"><span>Minecraft</span><span style="color:var(--text-secondary);">45 GB</span></div><div class="progress-track"><div class="progress-fill" style="width:22%;background:var(--accent-green)"></div></div></div>
+            <div><div class="progress-label"><span>Valheim</span><span style="color:var(--text-secondary);">18 GB</span></div><div class="progress-track"><div class="progress-fill" style="width:9%;background:var(--accent-purple)"></div></div></div>
+            <div><div class="progress-label"><span>Satisfactory</span><span style="color:var(--text-secondary);">38 GB</span></div><div class="progress-track"><div class="progress-fill" style="width:19%;background:var(--accent-orange)"></div></div></div>
+            <div><div class="progress-label"><span>Sauvegardes</span><span style="color:var(--text-secondary);">151 GB</span></div><div class="progress-track"><div class="progress-fill" style="width:75%;background:var(--accent-yellow)"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MODS ═══ -->
+    <div class="view" id="view-mods">
+      <div class="section-header">
+        <div><div class="section-title">Gestionnaire de mods</div><div class="section-sub">Steam Workshop + mods manuels</div></div>
+        <button class="btn btn-primary">+ Installer un mod</button>
+      </div>
+      <div class="alert-item warn" style="margin-bottom:18px;">
+        <div class="alert-icon">⚠</div>
+        <div><div class="alert-title">3 mods nécessitent une mise à jour</div><div class="alert-msg">Structures Plus, Better Reusable Plus, Dino Storage v2 — des mises à jour sont disponibles</div></div>
+        <button class="btn btn-primary btn-sm" style="flex-shrink:0;">Tout mettre à jour</button>
+      </div>
+      <div class="mods-list">
+        <div class="mod-item"><div class="mod-thumb">🦖</div><div class="mod-info"><div class="mod-name">Primal Fear</div><div class="mod-meta">ARK • Steam Workshop • ID: 1675895425 • v2.1.14 • 845 MB</div></div><span class="tag tag-green">✓ À jour</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="mod-item"><div class="mod-thumb">🏠</div><div class="mod-info"><div class="mod-name">Structures Plus (S+)</div><div class="mod-meta">ARK • Steam Workshop • ID: 731604991 • v1.38 → v1.39 disponible • 323 MB</div></div><span class="tag tag-orange">⚠ Mise à jour</span><button class="btn btn-primary btn-sm">↑ Mettre à jour</button><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="mod-item"><div class="mod-thumb">🪓</div><div class="mod-info"><div class="mod-name">Better Reusable Plus</div><div class="mod-meta">ARK • Steam Workshop • ID: 1565015734 • v2.0 → v2.1 disponible • 8 MB</div></div><span class="tag tag-orange">⚠ Mise à jour</span><button class="btn btn-primary btn-sm">↑ Mettre à jour</button><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="mod-item"><div class="mod-thumb">🧊</div><div class="mod-info"><div class="mod-name">Dino Storage v2</div><div class="mod-meta">ARK • Steam Workshop • ID: 1609138312 • v1.52 → v1.53 disponible • 64 MB</div></div><span class="tag tag-orange">⚠ Mise à jour</span><button class="btn btn-primary btn-sm">↑ Mettre à jour</button><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="mod-item"><div class="mod-thumb">⚔️</div><div class="mod-info"><div class="mod-name">Valheim Plus</div><div class="mod-meta">Valheim • Nexus Mods • v0.9.12 • 2.1 MB</div></div><span class="tag tag-green">✓ À jour</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="mod-item"><div class="mod-thumb">🗺️</div><div class="mod-info"><div class="mod-name">Epic Valheim Additions</div><div class="mod-meta">Valheim • Thunderstore • v1.0.4 • 18 MB</div></div><span class="tag tag-green">✓ À jour</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+    </div>
+
+    <!-- ═══ BACKUPS ═══ -->
+    <div class="view" id="view-backups">
+      <div class="section-header">
+        <div><div class="section-title">Gestion des sauvegardes</div><div class="section-sub">Historique complet — 380 GB utilisés</div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost">⚙ Planifier</button>
+          <button class="btn btn-primary">+ Sauvegarde manuelle</button>
+        </div>
+      </div>
+
+      <div class="config-grid" style="margin-bottom:20px;">
+        <div class="config-card">
+          <div class="config-card-title">⏰ Sauvegardes automatiques</div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">ARK-PvP-EU-01</div><div class="toggle-desc">Toutes les 2h — Rétention: 7 jours</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Valhalla-Coop</div><div class="toggle-desc">Toutes les 4h — Rétention: 14 jours</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Survival-1.21 (MC)</div><div class="toggle-desc">Toutes les 6h — Rétention: 30 jours</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Factory-Prod-01</div><div class="toggle-desc">Toutes les 3h — Rétention: 7 jours</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="config-card">
+          <div class="config-card-title">📊 Statistiques</div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Taille totale des backups</div></div><span style="font-family:var(--font-mono);color:var(--accent-cyan)">151 GB</span></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Nombre de sauvegardes</div></div><span style="font-family:var(--font-mono);color:var(--text-primary)">47</span></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Dernier backup</div></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--accent-green)">il y a 3h</span></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Prochain backup</div></div><span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary)">dans 47min</span></div>
+        </div>
+      </div>
+
+      <div class="config-card" style="padding:0;overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border-faint);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;font-weight:600;">Historique des sauvegardes</span>
+          <div style="display:flex;gap:6px;">
+            <select class="form-select" style="width:auto;padding:5px 10px;font-size:12px;"><option>Tous les serveurs</option><option>ARK</option><option>Valheim</option><option>Minecraft</option></select>
+          </div>
+        </div>
+        <table class="backup-table">
+          <thead><tr><th>Serveur</th><th>Date</th><th>Taille</th><th>Type</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--text-primary);font-weight:500;">ARK-PvP-EU-01</td><td>Aujourd'hui 12:32</td><td class="backup-size">1.84 GB</td><td><span class="tag tag-cyan">Auto</span></td><td><div style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">↓ Restaurer</button><button class="btn btn-ghost btn-sm">⬇ Export</button><button class="btn btn-danger btn-sm">✕</button></div></td></tr>
+            <tr><td style="color:var(--text-primary);font-weight:500;">Survival-1.21</td><td>Aujourd'hui 10:00</td><td class="backup-size">3.21 GB</td><td><span class="tag tag-cyan">Auto</span></td><td><div style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">↓ Restaurer</button><button class="btn btn-ghost btn-sm">⬇ Export</button><button class="btn btn-danger btn-sm">✕</button></div></td></tr>
+            <tr><td style="color:var(--text-primary);font-weight:500;">Valhalla-Coop</td><td>Hier 22:14</td><td class="backup-size">2.33 GB</td><td><span class="tag tag-green">Manuel</span></td><td><div style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">↓ Restaurer</button><button class="btn btn-ghost btn-sm">⬇ Export</button><button class="btn btn-danger btn-sm">✕</button></div></td></tr>
+            <tr><td style="color:var(--text-primary);font-weight:500;">ARK-PvP-EU-01</td><td>Hier 10:32</td><td class="backup-size">1.79 GB</td><td><span class="tag tag-cyan">Auto</span></td><td><div style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">↓ Restaurer</button><button class="btn btn-ghost btn-sm">⬇ Export</button><button class="btn btn-danger btn-sm">✕</button></div></td></tr>
+            <tr><td style="color:var(--text-primary);font-weight:500;">Factory-Prod-01</td><td>Hier 08:00</td><td class="backup-size">0.91 GB</td><td><span class="tag tag-cyan">Auto</span></td><td><div style="display:flex;gap:4px;"><button class="btn btn-ghost btn-sm">↓ Restaurer</button><button class="btn btn-ghost btn-sm">⬇ Export</button><button class="btn btn-danger btn-sm">✕</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ MARKETPLACE ═══ -->
+    <div class="view" id="view-marketplace">
+      <div class="section-header">
+        <div><div class="section-title">Marketplace — Templates & Configs</div><div class="section-sub">Configurations prêtes à l'emploi par la communauté</div></div>
+        <button class="btn btn-primary">+ Publier ma config</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm">Tous</button>
+        <button class="btn btn-ghost btn-sm">ARK</button>
+        <button class="btn btn-ghost btn-sm">Valheim</button>
+        <button class="btn btn-ghost btn-sm">Minecraft</button>
+        <button class="btn btn-ghost btn-sm">DayZ</button>
+        <button class="btn btn-ghost btn-sm">Templates PvP</button>
+        <button class="btn btn-ghost btn-sm">Templates PvE</button>
+        <button class="btn btn-ghost btn-sm">Hardcore</button>
+      </div>
+
+      <div class="market-grid">
+        <div class="market-card">
+          <div class="market-thumb">🦕</div>
+          <div class="market-body">
+            <div style="display:flex;gap:6px;margin-bottom:6px;"><span class="tag tag-orange">PvP</span><span class="tag tag-cyan">ARK</span></div>
+            <div class="market-name">ARK PvP Hardcore — Prêt à jouer</div>
+            <div class="market-desc">Configuration optimisée pour un PvP intensif. XP x3, Taming x5, Harvest x3. Inclut Primal Fear + S+.</div>
+            <div class="market-footer">
+              <span class="market-stars">★★★★★ 4.9</span>
+              <span class="market-downloads">↓ 1,248</span>
+              <button class="btn btn-primary btn-sm">Installer</button>
+            </div>
+          </div>
+        </div>
+        <div class="market-card">
+          <div class="market-thumb">⚔️</div>
+          <div class="market-body">
+            <div style="display:flex;gap:6px;margin-bottom:6px;"><span class="tag tag-green">PvE</span><span class="tag tag-purple">Valheim</span></div>
+            <div class="market-name">Valheim Coop Friendly</div>
+            <div class="market-desc">Serveur 10 joueurs avec Valheim Plus. Mort non punitive, ressources augmentées pour une expérience coop agréable.</div>
+            <div class="market-footer">
+              <span class="market-stars">★★★★☆ 4.6</span>
+              <span class="market-downloads">↓ 834</span>
+              <button class="btn btn-primary btn-sm">Installer</button>
+            </div>
+          </div>
+        </div>
+        <div class="market-card">
+          <div class="market-thumb">⛏️</div>
+          <div class="market-body">
+            <div style="display:flex;gap:6px;margin-bottom:6px;"><span class="tag tag-green">Survie</span><span class="tag tag-cyan">Minecraft</span></div>
+            <div class="market-name">Minecraft ATM9 Modpack Server</div>
+            <div class="market-desc">All The Mods 9 — 400+ mods, config optimisée 8 GB RAM. Anti-lag, backups auto toutes les 2h.</div>
+            <div class="market-footer">
+              <span class="market-stars">★★★★★ 4.8</span>
+              <span class="market-downloads">↓ 2,103</span>
+              <button class="btn btn-primary btn-sm">Installer</button>
+            </div>
+          </div>
+        </div>
+        <div class="market-card">
+          <div class="market-thumb">🧟</div>
+          <div class="market-body">
+            <div style="display:flex;gap:6px;margin-bottom:6px;"><span class="tag tag-orange">PvP/PvE</span><span class="tag tag-cyan">DayZ</span></div>
+            <div class="market-name">DayZ Livonia PvPvE</div>
+            <div class="market-desc">Map Livonia, 60 joueurs, économie personnalisée, safe zones au nord. Mods: Trader, BuildAnywhere, Code Lock.</div>
+            <div class="market-footer">
+              <span class="market-stars">★★★★☆ 4.4</span>
+              <span class="market-downloads">↓ 567</span>
+              <button class="btn btn-primary btn-sm">Installer</button>
+            </div>
+          </div>
+        </div>
+        <div class="market-card">
+          <div class="market-thumb">🏭</div>
+          <div class="market-body">
+            <div style="display:flex;gap:6px;margin-bottom:6px;"><span class="tag tag-green">Coop</span><span class="tag tag-cyan">Satisfactory</span></div>
+            <div class="market-name">Satisfactory Ultimate Factory</div>
+            <div class="market-desc">4 joueurs, config réseau optimisée, save incluse Phase 4. Idéal pour reprendre une partie existante.</div>
+            <div class="market-footer">
+              <span class="market-stars">★★★★★ 4.7</span>
+              <span class="market-downloads">↓ 392</span>
+              <button class="btn btn-primary btn-sm">Installer</button>
+            </div>
+          </div>
+        </div>
+        <div class="market-card">
+          <div class="market-thumb">🪖</div>
+          <div class="market-body">
+            <div style="display:flex;gap:6px;margin-bottom:6px;"><span class="tag tag-orange">Milsim</span><span class="tag tag-purple">Arma 3</span></div>
+            <div class="market-name">Arma 3 Milsim Ready</div>
+            <div class="market-desc">ACE3 + ACRE2 + RHS configurés. Zeus activé, missions coopératives incluses. 40 joueurs max.</div>
+            <div class="market-footer">
+              <span class="market-stars">★★★★☆ 4.5</span>
+              <span class="market-downloads">↓ 289</span>
+              <button class="btn btn-primary btn-sm">Installer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="view" id="view-settings">
+      <div class="config-grid">
+        <div class="config-card">
+          <div class="config-card-title">🖥️ Environnement</div>
+          <div class="form-group"><label class="form-label">Chemin SteamCMD</label><input class="form-input" value="/opt/steamcmd"></div>
+          <div class="form-group"><label class="form-label">Répertoire des serveurs</label><input class="form-input" value="/data/gameservers"></div>
+          <div class="form-group"><label class="form-label">Répertoire des backups</label><input class="form-input" value="/data/backups"></div>
+          <div class="form-group"><label class="form-label">Backend de conteneur</label><select class="form-select"><option>Docker</option><option>Podman</option><option>Natif</option></select></div>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card-title">🔔 Notifications</div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Crash serveur</div><div class="toggle-desc">Alerte immédiate en cas de crash</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Mise à jour disponible</div><div class="toggle-desc">Notification lors de nouvelles versions</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">CPU > 90%</div><div class="toggle-desc">Alerte charge CPU élevée</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Joueur banni</div><div class="toggle-desc">Notifier lors d'un ban</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Sauvegarde terminée</div><div class="toggle-desc">Confirmation de backup</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+
+        <div>
+          <div class="discord-card">
+            <div class="discord-header">
+              <div class="discord-icon">💬</div>
+              <div><div class="discord-title">Intégration Discord</div><div class="discord-sub">Logs et alertes dans vos channels</div></div>
+              <div class="toggle on" style="margin-left:auto;" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="form-group"><label class="form-label" style="color:#7289da;">Webhook URL</label><input class="form-input" value="https://discord.com/api/webhooks/..." style="background:#111322;border-color:rgba(88,101,242,0.3);"></div>
+            <div class="form-group"><label class="form-label" style="color:#7289da;">Channel #logs</label><input class="form-input" value="#server-logs" style="background:#111322;border-color:rgba(88,101,242,0.3);"></div>
+            <div class="form-group"><label class="form-label" style="color:#7289da;">Channel #alertes</label><input class="form-input" value="#server-alerts" style="background:#111322;border-color:rgba(88,101,242,0.3);"></div>
+            <button class="btn btn-ghost btn-sm" style="border-color:rgba(88,101,242,0.4);color:#7289da;">Tester la connexion</button>
+          </div>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card-title">👥 Utilisateurs & Permissions</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+            <div class="mod-item" style="padding:10px 12px;">
+              <div class="avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;">AD</div>
+              <div class="mod-info"><div class="mod-name">Admin</div><div class="mod-meta"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7213161f1b1c3215131f17141d0015175c1e1d11131e">[email&#160;protected]</a></div></div>
+              <span class="tag tag-cyan">Super Admin</span>
+            </div>
+            <div class="mod-item" style="padding:10px 12px;">
+              <div class="avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,#2a3a4a,#1a2a3a);flex-shrink:0;">U1</div>
+              <div class="mod-info"><div class="mod-name">User1</div><div class="mod-meta"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bdc8ced8cf8cfddadcd0d8dbd2cfdad893d1d2dedcd1">[email&#160;protected]</a></div></div>
+              <span class="tag tag-green">Opérateur</span>
+            </div>
+            <div class="mod-item" style="padding:10px 12px;">
+              <div class="avatar" style="width:28px;height:28px;font-size:11px;background:linear-gradient(135deg,#3a2a4a,#2a1a3a);flex-shrink:0;">U2</div>
+              <div class="mod-info"><div class="mod-name">Viewer</div><div class="mod-meta"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="a6d0cfc3d1c3d4e6c1c7cbc3c0c9d4c1c388cac9c5c7ca">[email&#160;protected]</a></div></div>
+              <span class="tag tag-purple">Lecture seule</span>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm">+ Inviter un utilisateur</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER GAME VIEWS (simplified) -->
+    <div class="view" id="view-game-valheim">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div class="game-icon" style="width:52px;height:52px;font-size:26px;background:linear-gradient(135deg,#1a1a2e,#2a1a3e)">⚔️</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;">Valheim — Valhalla-Coop</h1>
+          <div style="display:flex;gap:8px;margin-top:4px;"><span class="status-badge online"><div class="status-dot"></div>Online</span><span class="tag tag-cyan">v0.218.19</span><span class="tag tag-green">4 / 10 joueurs</span></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;"><button class="btn btn-ghost">💾 Backup</button><button class="btn btn-danger">⏹ Arrêter</button></div>
+      </div>
+      <div class="config-grid">
+        <div class="config-card"><div class="config-card-title">⚙ Configuration Valheim</div>
+          <div class="form-group"><label class="form-label">Nom du monde</label><input class="form-input" value="Valhalla"></div>
+          <div class="form-group"><label class="form-label">Mot de passe</label><input class="form-input" type="password" value="••••••••"></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Port</label><input class="form-input" value="2456"></div><div class="form-group"><label class="form-label">Max joueurs</label><input class="form-input" value="10"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Serveur public</div><div class="toggle-desc">Visible dans la liste de serveurs</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Crossplay</div><div class="toggle-desc">Rejoindre depuis Xbox/PC</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="config-card"><div class="config-card-title">🌍 Monde & Sauvegarde</div>
+          <div class="form-group"><label class="form-label">Seed du monde</label><input class="form-input" value="HHcLC5acQt" style="font-family:var(--font-mono)"></div>
+          <div class="form-group"><label class="form-label">Fichier de sauvegarde</label><select class="form-select"><option>Valhalla.fwl (Actif)</option><option>Valhalla_backup_2024.fwl</option><option>NewWorld.fwl</option></select></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Sauvegardes automatiques</div><div class="toggle-desc">Toutes les 4 heures</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:8px;">Sauvegarder les modifications</button>
+    </div>
+
+    <div class="view" id="view-game-minecraft">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div class="game-icon" style="width:52px;height:52px;font-size:26px;background:linear-gradient(135deg,#1a2a1a,#1a3a1a)">⛏️</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;">Minecraft — Survival-1.21</h1>
+          <div style="display:flex;gap:8px;margin-top:4px;"><span class="status-badge online"><div class="status-dot"></div>Online</span><span class="tag tag-green">PaperMC 1.21.4</span><span class="tag tag-cyan">7 / 20 joueurs</span></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;"><button class="btn btn-ghost">⚙ server.properties</button><button class="btn btn-danger">⏹ Arrêter</button></div>
+      </div>
+      <div class="config-grid">
+        <div class="config-card"><div class="config-card-title">☕ Java & Mémoire</div>
+          <div class="form-group"><label class="form-label">Version Java</label><select class="form-select"><option>Java 21 (Recommandé)</option><option>Java 17</option></select></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">RAM Min (-Xms)</label><input class="form-input" value="2G"></div><div class="form-group"><label class="form-label">RAM Max (-Xmx)</label><input class="form-input" value="8G"></div></div>
+          <div class="form-group"><label class="form-label">Flags JVM</label><select class="form-select"><option>Aikar Flags (Recommandé)</option><option>Flags par défaut</option><option>Custom</option></select></div>
+          <div class="form-group"><label class="form-label">Type de serveur</label><select class="form-select"><option>PaperMC</option><option>Spigot</option><option>Vanilla</option><option>Fabric</option><option>Forge</option><option>NeoForge</option></select></div>
+        </div>
+        <div class="config-card"><div class="config-card-title">🌍 Monde</div>
+          <div class="form-group"><label class="form-label">Mode de jeu</label><select class="form-select"><option>Survival</option><option>Creative</option><option>Adventure</option><option>Spectator</option></select></div>
+          <div class="form-group"><label class="form-label">Difficulté</label><select class="form-select"><option>Normal</option><option>Peaceful</option><option>Easy</option><option>Hard</option></select></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Mode Hardcore</div><div class="toggle-desc">Suppression du monde à la mort</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">PvP</div><div class="toggle-desc">Combat entre joueurs autorisé</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Whitelist</div><div class="toggle-desc">Serveur sur liste blanche</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-game-satisfactory">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div class="game-icon" style="width:52px;height:52px;font-size:26px;background:linear-gradient(135deg,#1a1a2a,#2a2a1a)">🏭</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;">Satisfactory — Factory-Prod-01</h1>
+          <div style="display:flex;gap:8px;margin-top:4px;"><span class="status-badge online"><div class="status-dot"></div>Online</span><span class="tag tag-cyan">v1.0.0.4</span><span class="tag tag-green">4 / 4 joueurs</span></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;"><button class="btn btn-ghost">💾 Backup</button><button class="btn btn-danger">⏹ Arrêter</button></div>
+      </div>
+      <div class="config-grid">
+        <div class="config-card"><div class="config-card-title">🏭 Paramètres serveur</div>
+          <div class="form-group"><label class="form-label">Nom du serveur</label><input class="form-input" value="Factory-Prod-01"></div>
+          <div class="form-group"><label class="form-label">Mot de passe Admin</label><input class="form-input" type="password" value="••••••••"></div>
+          <div class="form-group"><label class="form-label">Port API</label><input class="form-input" value="7777"></div>
+          <div class="form-group"><label class="form-label">Fichier de sauvegarde</label><select class="form-select"><option>Phase4_Main.sav</option><option>Phase2_backup.sav</option></select></div>
+        </div>
+        <div class="config-card"><div class="config-card-title">⚙ Options avancées</div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Auto-pause</div><div class="toggle-desc">Pause quand aucun joueur connecté</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Auto-save</div><div class="toggle-desc">Sauvegarde automatique</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="form-row" style="margin-top:10px;"><div class="form-group"><label class="form-label">Intervalle auto-save (min)</label><input class="form-input" value="5"></div><div class="form-group"><label class="form-label">Max joueurs</label><input class="form-input" value="4"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-game-dayz">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div class="game-icon" style="width:52px;height:52px;font-size:26px;background:linear-gradient(135deg,#2a1a1a,#1a1a1a)">🧟</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;">DayZ — Serveur arrêté</h1>
+          <div style="display:flex;gap:8px;margin-top:4px;"><span class="status-badge offline"><div class="status-dot"></div>Offline</span><span class="tag tag-cyan">v1.24</span></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;"><button class="btn btn-success">▶ Démarrer</button><button class="btn btn-ghost">⚙ Config</button></div>
+      </div>
+      <div class="config-grid">
+        <div class="config-card"><div class="config-card-title">🗺️ Map & Configuration</div>
+          <div class="form-group"><label class="form-label">Map</label><select class="form-select"><option>Chernarus</option><option>Livonia</option><option>Namalsk</option><option>Deer Isle</option></select></div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Max joueurs</label><input class="form-input" value="60"></div><div class="form-group"><label class="form-label">Port</label><input class="form-input" value="2302"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">First Person Only</div><div class="toggle-desc">Désactive la vue à la 3ème personne</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="config-card"><div class="config-card-title">🧟 Paramètres DayZ</div>
+          <div class="form-row"><div class="form-group"><label class="form-label">Zombies (multiplicateur)</label><input class="form-input" value="1.5"></div><div class="form-group"><label class="form-label">Loot (multiplicateur)</label><input class="form-input" value="1.2"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Trader Mod</div><div class="toggle-desc">Économie avec marchands</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Code Lock</div><div class="toggle-desc">Serrures à code pour bases</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-game-arma3">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div class="game-icon" style="width:52px;height:52px;font-size:26px;background:linear-gradient(135deg,#1a2a1a,#1a1a1a)">🪖</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;">Arma 3 — Arrêté</h1>
+          <div style="display:flex;gap:8px;margin-top:4px;"><span class="status-badge offline"><div class="status-dot"></div>Offline</span><span class="tag tag-cyan">v2.18</span></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;"><button class="btn btn-success">▶ Démarrer</button></div>
+      </div>
+      <div class="empty-state">
+        <div class="empty-icon">🪖</div>
+        <div class="empty-title">Serveur Arma 3 configuré mais arrêté</div>
+        <div class="empty-desc">Démarrez le serveur pour accéder à toutes les options de configuration en direct.</div>
+      </div>
+    </div>
+
+    <div class="view" id="view-game-enshrouded">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+        <div class="game-icon" style="width:52px;height:52px;font-size:26px;background:linear-gradient(135deg,#2a1a1a,#3a1a1a)">🌫️</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:800;letter-spacing:-0.5px;">Enshrouded — Crash détecté</h1>
+          <div style="display:flex;gap:8px;margin-top:4px;"><span class="status-badge error"><div class="status-dot"></div>Crash</span><span class="tag tag-cyan">v0.9.2</span></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;"><button class="btn btn-success">▶ Redémarrer</button><button class="btn btn-ghost">📋 Rapport de crash</button></div>
+      </div>
+      <div class="alert-item error" style="margin-bottom:18px;">
+        <div class="alert-icon">💥</div>
+        <div><div class="alert-title">Out of Memory — Crash il y a 14 minutes</div><div class="alert-msg">Ligne 4821: Failed to allocate 4096 MB. Increase RAM allocation or reduce player count. Last known state saved.</div></div>
+      </div>
+      <div class="config-grid">
+        <div class="config-card"><div class="config-card-title">💾 Dernière sauvegarde connue</div>
+          <div class="toggle-wrap"><div class="toggle-info"><div class="toggle-title">Sauvegarde auto avant crash</div><div class="toggle-desc">Enshrouded_2024-01-15_14-40.zip — 891 MB</div></div><button class="btn btn-primary btn-sm">↓ Restaurer</button></div>
+        </div>
+        <div class="config-card"><div class="config-card-title">⚙ Correction suggérée</div>
+          <div class="form-group"><label class="form-label">RAM allouée (actuelle: 4 GB)</label><select class="form-select"><option>4 GB (Actuel — insuffisant)</option><option selected>6 GB (Recommandé)</option><option>8 GB (Optimal)</option></select></div>
+          <div class="form-group"><label class="form-label">Max joueurs (actuel: 16)</label><input class="form-input" value="8"></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:8px;">Appliquer & Redémarrer</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- WIZARD MODAL -->
+<div class="wizard-overlay" id="wizard">
+  <div class="wizard-panel">
+    <div class="wizard-header">
+      <div class="wizard-header-icon" id="wizard-icon">🎮</div>
+      <div>
+        <div class="wizard-title">Nouveau serveur</div>
+        <div class="wizard-sub" id="wizard-step-label">Étape 1 sur 4 — Choisir le jeu</div>
+      </div>
+    </div>
+    <div style="cursor:pointer;position:absolute;top:18px;right:18px;width:28px;height:28px;border-radius:50%;background:var(--bg-elevated);border:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-secondary);" onclick="closeWizard()">✕</div>
+    <div class="wizard-body">
+      <div class="wizard-steps" id="wiz-steps">
+        <div class="wizard-step done"></div>
+        <div class="wizard-step active"></div>
+        <div class="wizard-step"></div>
+        <div class="wizard-step"></div>
+      </div>
+
+      <!-- Step 1: Game selection -->
+      <div id="wiz-step-1">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:14px;">Quel jeu souhaitez-vous héberger ?</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="game-selector">
+          <div class="wiz-game-btn" onclick="selectGame(this,'ark','🦕','ARK: Survival Evolved')">
+            <div style="font-size:24px;margin-bottom:4px;">🦕</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">ARK</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'valheim','⚔️','Valheim')">
+            <div style="font-size:24px;margin-bottom:4px;">⚔️</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Valheim</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'minecraft','⛏️','Minecraft')">
+            <div style="font-size:24px;margin-bottom:4px;">⛏️</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Minecraft</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'satisfactory','🏭','Satisfactory')">
+            <div style="font-size:24px;margin-bottom:4px;">🏭</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Satisfactory</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'dayz','🧟','DayZ')">
+            <div style="font-size:24px;margin-bottom:4px;">🧟</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">DayZ</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'arma3','🪖','Arma 3')">
+            <div style="font-size:24px;margin-bottom:4px;">🪖</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Arma 3</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'enshrouded','🌫️','Enshrouded')">
+            <div style="font-size:24px;margin-bottom:4px;">🌫️</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Enshrouded</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'ets2','🚛','Euro Truck Sim 2')">
+            <div style="font-size:24px;margin-bottom:4px;">🚛</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">ETS2</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'ats','🚚','American Truck Sim')">
+            <div style="font-size:24px;margin-bottom:4px;">🚚</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">ATS</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'fs25','🚜','Farming Sim 25')">
+            <div style="font-size:24px;margin-bottom:4px;">🚜</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">FS25</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'icarus','🌙','Icarus')">
+            <div style="font-size:24px;margin-bottom:4px;">🌙</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Icarus</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'space-eng','🚀','Space Engineers')">
+            <div style="font-size:24px;margin-bottom:4px;">🚀</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Space Eng.</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'wreckfest','🏎️','Wreckfest')">
+            <div style="font-size:24px;margin-bottom:4px;">🏎️</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Wreckfest</div>
+          </div>
+          <div class="wiz-game-btn" onclick="selectGame(this,'dune','🏜️','Dune Awakening')">
+            <div style="font-size:24px;margin-bottom:4px;">🏜️</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-align:center;">Dune Awak.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Basic config -->
+      <div id="wiz-step-2" style="display:none;">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:14px;">Configuration de base</div>
+        <div class="form-group"><label class="form-label">Nom du serveur</label><input class="form-input" id="wiz-name" placeholder="Mon serveur ARK"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Max joueurs</label><input class="form-input" id="wiz-players" type="number" value="32"></div>
+          <div class="form-group"><label class="form-label">Port</label><input class="form-input" id="wiz-port" type="number" value="7777"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Mot de passe (optionnel)</label><input class="form-input" type="password" placeholder="Laisser vide pour serveur public"></div>
+        <div class="form-group"><label class="form-label">Template de départ</label>
+          <select class="form-select">
+            <option>🆕 Serveur vide (configuration manuelle)</option>
+            <option>⚡ PvP Compétitif (x5 taming, x3 harvest)</option>
+            <option>🌿 PvE Débutant (ressources augmentées)</option>
+            <option>💎 Hardcore (mort permanente)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Step 3: Installation -->
+      <div id="wiz-step-3" style="display:none;">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:14px;">Options d'installation</div>
+        <div class="form-group"><label class="form-label">Méthode d'installation</label>
+          <select class="form-select">
+            <option>SteamCMD (automatique — recommandé)</option>
+            <option>Docker (isolé)</option>
+            <option>Fichiers existants (avancé)</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Répertoire d'installation</label><input class="form-input" value="/data/gameservers/nouveau-serveur"></div>
+        <div class="toggle-wrap" style="padding:10px 0;"><div class="toggle-info"><div class="toggle-title">Mise à jour automatique</div><div class="toggle-desc">Mettre à jour lors des nouvelles versions du jeu</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-wrap" style="padding:10px 0;"><div class="toggle-info"><div class="toggle-title">Démarrer automatiquement</div><div class="toggle-desc">Lancer le serveur après installation</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="toggle-wrap" style="padding:10px 0;"><div class="toggle-info"><div class="toggle-title">Redémarrage automatique après crash</div><div class="toggle-desc">Relancer en cas de crash détecté</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-faint);border-radius:var(--radius-md);padding:12px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);">
+          Espace requis estimé: ~35 GB<br>
+          Durée d'installation estimée: ~8-15 minutes
+        </div>
+      </div>
+
+      <!-- Step 4: Confirm -->
+      <div id="wiz-step-4" style="display:none;">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:14px;">Récapitulatif & Lancement</div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:16px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <div style="font-size:28px;" id="wiz-confirm-icon">🦕</div>
+            <div>
+              <div style="font-size:15px;font-weight:700;font-family:var(--font-display);" id="wiz-confirm-name">Mon serveur ARK</div>
+              <div style="font-size:12px;color:var(--text-muted);" id="wiz-confirm-game">ARK: Survival Evolved</div>
+            </div>
+            <span class="tag tag-cyan" style="margin-left:auto;">SteamCMD</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+            <div><span style="color:var(--text-muted);">Max joueurs:</span> <span style="font-family:var(--font-mono);" id="wiz-confirm-players">32</span></div>
+            <div><span style="color:var(--text-muted);">Port:</span> <span style="font-family:var(--font-mono);" id="wiz-confirm-port">7777</span></div>
+            <div><span style="color:var(--text-muted);">Template:</span> PvP Compétitif</div>
+            <div><span style="color:var(--text-muted);">Docker:</span> Non</div>
+            <div><span style="color:var(--text-muted);">Auto-update:</span> <span style="color:var(--accent-green);">✓ Activé</span></div>
+            <div><span style="color:var(--text-muted);">Auto-restart:</span> <span style="color:var(--accent-green);">✓ Activé</span></div>
+          </div>
+        </div>
+        <div class="alert-item info" style="margin-bottom:8px;">
+          <div class="alert-icon">ℹ</div>
+          <div><div class="alert-title">Installation via SteamCMD</div><div class="alert-msg">~35 GB seront téléchargés et installés automatiquement. Suivez la progression dans la console.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-footer">
+      <button class="btn btn-ghost" id="wiz-back" onclick="wizPrev()" style="visibility:hidden;">← Retour</button>
+      <div style="font-size:12px;color:var(--text-muted);" id="wiz-progress">Étape <span id="wiz-cur">1</span> / 4</div>
+      <button class="btn btn-primary" id="wiz-next" onclick="wizNext()">Suivant →</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.wiz-game-btn {
+  padding: 12px 8px;
+  border: 1px solid var(--border-faint);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+}
+.wiz-game-btn:hover { border-color: var(--border-medium); background: var(--bg-hover); }
+.wiz-game-btn.selected { border-color: var(--accent-cyan); background: var(--accent-cyan-dim); }
+.wiz-game-btn.selected div:last-child { color: var(--accent-cyan) !important; }
+</style>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+let currentView = 'dashboard';
+let currentTab = {};
+let wizStep = 1;
+let wizGameSelected = null;
+let wizGameIcon = '🎮';
+let wizGameName = '';
+
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.game-nav-item').forEach(n => n.classList.remove('active'));
+
+  const el = document.getElementById('view-' + view);
+  if (el) el.classList.add('active');
+  currentView = view;
+
+  const titles = {
+    'dashboard': ['Dashboard', 'Vue globale de tous les serveurs'],
+    'monitoring': ['Monitoring', 'CPU, RAM, réseau en temps réel'],
+    'mods': ['Mods & Workshop', 'Gestion des modifications'],
+    'backups': ['Sauvegardes', 'Historique et restauration'],
+    'marketplace': ['Marketplace', 'Templates et configurations communautaires'],
+    'settings': ['Paramètres', 'Configuration de GameForge'],
+    'game-ark': ['ARK: Survival Evolved', 'ARK-PvP-EU-01'],
+    'game-valheim': ['Valheim', 'Valhalla-Coop'],
+    'game-minecraft': ['Minecraft', 'Survival-1.21'],
+    'game-satisfactory': ['Satisfactory', 'Factory-Prod-01'],
+    'game-dayz': ['DayZ', 'Serveur arrêté'],
+    'game-arma3': ['Arma 3', 'Serveur arrêté'],
+    'game-enshrouded': ['Enshrouded', 'Crash détecté — intervention requise'],
+  };
+
+  const t = titles[view] || [view, ''];
+  document.getElementById('topbar-title').textContent = t[0];
+  document.getElementById('topbar-sub').textContent = t[1];
+
+  // Init charts if monitoring
+  if (view === 'monitoring') { initCharts(); }
+}
+
+function setTab(el, game, tab) {
+  const parent = el.closest('.game-tabs');
+  parent.querySelectorAll('.game-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  const panels = ['overview','config','mods','players','maps','console'];
+  panels.forEach(p => {
+    const el2 = document.getElementById(game + '-' + p);
+    if (el2) el2.style.display = p === tab ? 'block' : 'none';
+  });
+}
+
+function saveConfig() {
+  const btn = event.target;
+  btn.textContent = '✓ Sauvegardé !';
+  btn.style.background = 'var(--accent-green)';
+  btn.style.color = '#000';
+  setTimeout(() => {
+    btn.textContent = 'Sauvegarder & Redémarrer';
+    btn.style.background = '';
+    btn.style.color = '';
+  }, 2000);
+}
+
+function sendCmd(e) {
+  if (e.key !== 'Enter') return;
+  const input = document.getElementById('console-cmd');
+  const log = document.getElementById('console-log');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  const now = new Date();
+  const t = now.toTimeString().slice(0,8);
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">${t}</span><span class="log-level info">[CMD]</span><span class="log-msg" style="color:var(--accent-cyan)">&gt; ${cmd}</span>`;
+  log.appendChild(div);
+  setTimeout(() => {
+    const r = document.createElement('div');
+    r.className = 'log-line';
+    r.innerHTML = `<span class="log-time">${t}</span><span class="log-level ok">[OK]</span><span class="log-msg">Commande exécutée avec succès</span>`;
+    log.appendChild(r);
+    log.scrollTop = log.scrollHeight;
+  }, 300);
+  input.value = '';
+  log.scrollTop = log.scrollHeight;
+}
+
+function openWizard() {
+  wizStep = 1;
+  document.getElementById('wizard').classList.add('open');
+  updateWizStep();
+}
+
+function closeWizard() {
+  document.getElementById('wizard').classList.remove('open');
+}
+
+function selectGame(el, game, icon, name) {
+  document.querySelectorAll('.wiz-game-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  wizGameSelected = game;
+  wizGameIcon = icon;
+  wizGameName = name;
+  document.getElementById('wizard-icon').textContent = icon;
+}
+
+function wizNext() {
+  if (wizStep === 1 && !wizGameSelected) {
+    const first = document.querySelector('.wiz-game-btn');
+    first.click();
+  }
+  if (wizStep === 4) {
+    closeWizard();
+    return;
+  }
+  wizStep++;
+  updateWizStep();
+}
+
+function wizPrev() {
+  if (wizStep <= 1) return;
+  wizStep--;
+  updateWizStep();
+}
+
+function updateWizStep() {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('wiz-step-' + i);
+    if (el) el.style.display = i === wizStep ? 'block' : 'none';
+  }
+
+  const steps = document.querySelectorAll('.wizard-step');
+  steps.forEach((s, i) => {
+    s.className = 'wizard-step';
+    if (i < wizStep - 1) s.classList.add('done');
+    else if (i === wizStep - 1) { s.classList.add('done'); s.classList.add('active'); }
+  });
+
+  document.getElementById('wiz-cur').textContent = wizStep;
+  document.getElementById('wiz-back').style.visibility = wizStep > 1 ? 'visible' : 'hidden';
+  document.getElementById('wiz-next').textContent = wizStep === 4 ? '🚀 Lancer l\'installation' : 'Suivant →';
+
+  const labels = ['Étape 1 sur 4 — Choisir le jeu','Étape 2 sur 4 — Configuration de base','Étape 3 sur 4 — Installation','Étape 4 sur 4 — Confirmation'];
+  document.getElementById('wizard-step-label').textContent = labels[wizStep - 1];
+
+  if (wizStep === 4) {
+    const name = document.getElementById('wiz-name')?.value || 'Mon serveur';
+    const players = document.getElementById('wiz-players')?.value || '32';
+    const port = document.getElementById('wiz-port')?.value || '7777';
+    if (document.getElementById('wiz-confirm-icon')) document.getElementById('wiz-confirm-icon').textContent = wizGameIcon;
+    if (document.getElementById('wiz-confirm-name')) document.getElementById('wiz-confirm-name').textContent = name;
+    if (document.getElementById('wiz-confirm-game')) document.getElementById('wiz-confirm-game').textContent = wizGameName;
+    if (document.getElementById('wiz-confirm-players')) document.getElementById('wiz-confirm-players').textContent = players;
+    if (document.getElementById('wiz-confirm-port')) document.getElementById('wiz-confirm-port').textContent = port;
+  }
+}
+
+function refreshAll() {
+  const btn = event.target;
+  btn.textContent = '↻ Actualisation...';
+  setTimeout(() => { btn.textContent = '↻ Rafraîchir'; }, 1200);
+  animateCounters();
+}
+
+function animateCounters() {
+  const cpuEl = document.getElementById('cpu-avg');
+  const newCpu = Math.floor(32 + Math.random() * 20);
+  if (cpuEl) cpuEl.innerHTML = newCpu + '<span style="font-size:14px">%</span>';
+  const pcEl = document.getElementById('player-count');
+  const newP = Math.floor(18 + Math.random() * 10);
+  if (pcEl) pcEl.textContent = newP;
+}
+
+function showNotifications() {
+  const dot = document.querySelector('.notif-dot');
+  if (dot) dot.style.display = 'none';
+}
+
+function initCharts() {
+  const cpu = document.getElementById('cpu-chart');
+  const ram = document.getElementById('ram-chart');
+  if (cpu && cpu.children.length === 0) {
+    const cpuData = [45,42,55,60,52,48,53,58,50,47,52,56,60,55,50,48,52,55,58,54,50,48,52,55,60,56,50,48,52,55];
+    cpuData.forEach((v,i) => {
+      const b = document.createElement('div');
+      b.className = 'bar bar-cpu';
+      b.style.height = v + '%';
+      cpu.appendChild(b);
+    });
+  }
+  if (ram && ram.children.length === 0) {
+    const ramData = [40,42,44,45,46,48,47,46,48,50,52,53,52,50,51,52,54,55,54,52,53,54,55,56,58,57,55,54,55,56];
+    ramData.forEach(v => {
+      const b = document.createElement('div');
+      b.className = 'bar bar-ram';
+      b.style.height = v + '%';
+      ram.appendChild(b);
+    });
+  }
+}
+
+// Live counter animation on load
+setTim
