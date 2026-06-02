@@ -1,0 +1,67 @@
+{
+  "name": "gameforge-desktop",
+  "version": "1.0.0",
+  "description": "GameForge - Professional Desktop Game Server Manager",
+  "main": "electron/main.js",
+  "type": "module",
+  "homepage": "./",
+  "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "backend:dev": "cd gameforge && npm start",
+    "frontend:dev": "cd gameforge-frontend && npm run dev",
+    "frontend:build": "cd gameforge-frontend && npm run build",
+    "electron:dev": "npm run frontend:build && electron .",
+    "electron:build": "npm run frontend:build && electron-builder",
+    "electron:build:portable": "npm run frontend:build && electron-builder --win portable",
+    "build": "npm run frontend:build && electron-builder --publish never",
+    "build:dist": "npm run frontend:build && electron-builder"
+  },
+  "dependencies": {
+    "electron-is-dev": "^3.0.0",
+    "electron-updater": "^6.1.7"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.gameforge.app",
+    "productName": "GameForge",
+    "files": [
+      "electron/**/*",
+      "gameforge/package.json",
+      "gameforge/server.js",
+      "gameforge/src/**/*",
+      "gameforge/data/**/*",
+      "gameforge-frontend/dist/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "certificateFile": null,
+      "certificatePassword": null,
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GameForge"
+    }
+  }
+}
